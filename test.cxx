@@ -24,8 +24,6 @@ int main()
 	std::string input;
 	std::cin >> input;
 
-	char buffer[128];
-
 	std::cout << "OUT: " << input << std::endl;
 	std::cerr << "ERR: " << input << std::endl;
 

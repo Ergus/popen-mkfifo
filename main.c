@@ -21,15 +21,17 @@
 
 int main()
 {
-	char *cmd[] = {"./test.x", NULL};
+	char *cmd[] = {"./test.py", NULL};
 
+	// Open the pipes: 1 in; 2 out; 4 err -> 7 = (1|2|4)
 	struct pipe_set *myset = mypopen(7, cmd);
 
+	// Write to process, fflush is very needed.
 	fprintf(myset->fd[0], "HelloWorld\n");
 	fflush(myset->fd[0]);
 
+	// Read from the two pipes
 	char buffer[128];
-
 	while (fgets(buffer, 128, myset->fd[1]) != NULL) {
 		printf("FROM STDOUT: %s\n", buffer);
 	}
@@ -38,6 +40,7 @@ int main()
 		printf("FROM STDERR: %s\n", buffer);
 	}
 
+	// Close the pipes
 	mypclose(myset);
 
 	return 0;
