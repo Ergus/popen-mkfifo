@@ -16,11 +16,15 @@
  */
 
 #include <iostream>
-#include <fstream> 
+#include <fstream>
 #include <string>
+#include <unistd.h>
 
 int main()
 {
+	std::cout << "PID: " << getpid() << std::endl;
+	std::cout << "PPID: " << getppid() << std::endl;
+
 	std::string input;
 	std::cin >> input;
 
