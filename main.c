@@ -30,14 +30,15 @@ int main()
 	fprintf(myset->fd[0], "HelloWorld\n");
 	fflush(myset->fd[0]);
 
-	// Read from the two pipes
+	// Read from the stdout
 	char buffer[128];
 	while (fgets(buffer, 128, myset->fd[1]) != NULL) {
-		printf("FROM STDOUT: %s\n", buffer);
+		printf("FROM STDOUT: %s", buffer);
 	}
 
+	// Read from the stderr
 	while (fgets(buffer, 128, myset->fd[2]) != NULL) {
-		printf("FROM STDERR: %s\n", buffer);
+		printf("FROM STDERR: %s", buffer);
 	}
 
 	// Close the pipes
