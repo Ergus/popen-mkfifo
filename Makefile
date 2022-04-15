@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-all: main.x libmypopen.so
+all: main_popen.x main_mkfifo.x libmypopen.so
 
 %.x: %.c libmypopen.so
 	gcc -g -Wall -Wl,-rpath,. -L . -lmypopen $< -o $@
@@ -32,7 +32,7 @@ lib%.so: %.o
 clean:
 	rm -rf *.o *.so *.x
 
-test: main.x test.x test.py
-	./main.x test.x
-	./main.x test.py
-	./main.x /usr/bin/ls -l
+test: main_popen.x test.x test.py
+	./main_popen.x test.x
+	./main_popen.x test.py
+	./main_popen.x /usr/bin/ls -l

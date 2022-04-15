@@ -15,25 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MYPOPEN_H
-#define MYPOPEN_H
-
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "mypopen.h"
 
-struct pipe_set {
-	pid_t pid;
-	FILE *fd[3];
-};
+int main(int argc, char **argv)
+{
+	if (argc < 2) {
+		printf("Usage: ./%s executable\n", argv[0]);
+		exit(1);
+	}
 
-struct pipe_set *mypopen(const unsigned int modes, char *const cmd[]);
+	char **cmd = &argv[1];
 
-int mypclose(struct pipe_set *pipes);
+	// Open the pipes: 1 in; 2 out; 4 err -> 7 = (1|2|4)
+	struct pipe_set *ret = mymkfifo("/tmp/fifofile", cmd);
 
-struct pipe_set *mymkfifo(const char pipename[], char *const cmd[]);
+	// Write to process, fflush is very needed.
+	fprintf(ret->fd[0], "2 + 2\n");
+	fprintf(ret->fd[0], "3 + 3\n");
+	fflush(ret->fd[0]);
 
-void mywaitpid(struct pipe_set *pipes);
+	fclose(ret->fd[0]);
+	ret->fd[0] = NULL;
 
-#endif // MYPOPEN_H
+	mywaitpid(ret);
+
+	mypclose(ret);
+	return 0;
+}

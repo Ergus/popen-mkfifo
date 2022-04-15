@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/param.h>
 #include <sys/wait.h>
 #include <signal.h>
@@ -26,6 +27,9 @@
 #include <string.h>
 #include <paths.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <string.h>
+#include <fcntl.h>
 
 struct pipe_set {
 	pid_t pid;
@@ -92,7 +96,44 @@ struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 	return ret;
 }
 
+struct pipe_set *mymkfifo(const char pipename[], char *const cmd[])
+{
+	struct pipe_set * volatile ret = malloc(sizeof(struct pipe_set));
+	if (ret == NULL) {
+		return NULL;
+	}
 
+	mkfifo(pipename, 0666);
+	pid_t pid  = fork();
+
+	if (pid == 0) {
+		int fd = open(pipename, O_RDONLY);
+		dup2(fd, 0);
+		close(fd);
+
+		execv(cmd[0], cmd);
+		exit(127);
+	}  else if (pid == -1) {			/* Error. */
+		return NULL;
+	}
+
+	ret->pid = pid;
+	ret->fd[0] = fopen(pipename, "w");
+	assert(ret->fd[0] != NULL);
+	ret->fd[1] = NULL;
+	ret->fd[2] = NULL;
+
+	return ret;
+}
+
+void mywaitpid(struct pipe_set *pipes)
+{
+	int pstat;
+	pid_t pid;
+	do {
+		pid = waitpid(pipes->pid, &pstat, 0);
+	} while (pid == -1 && errno == EINTR);
+}
 
 int mypclose(struct pipe_set *pipes)
 {
