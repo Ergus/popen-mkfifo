@@ -32,8 +32,7 @@ int main(int argc, char **argv)
 	struct pipe_set *ret = mymkfifo("/tmp/fifofile", cmd);
 
 	// Write to process, fflush is very needed.
-	fprintf(ret->fd[0], "2 + 2\n");
-	fprintf(ret->fd[0], "3 + 3\n");
+	fprintf(ret->fd[0], "print(\"Hello World\")\n");
 	fflush(ret->fd[0]);
 
 	fclose(ret->fd[0]);

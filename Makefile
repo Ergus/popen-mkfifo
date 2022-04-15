@@ -36,3 +36,4 @@ test: main_popen.x test.x test.py
 	./main_popen.x test.x
 	./main_popen.x test.py
 	./main_popen.x /usr/bin/ls -l
+	./main_mkfifo.x /usr/bin/python -i
