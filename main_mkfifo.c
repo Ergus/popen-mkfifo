@@ -35,10 +35,18 @@ int main(int argc, char **argv)
 	fprintf(ret->fd[0], "print(\"Hello World\")\n");
 	fflush(ret->fd[0]);
 
-	fclose(ret->fd[0]);
-	ret->fd[0] = NULL;
+	// At this point we can write to: /tmp/fifofile
+	// echo "3+3" > /tmp/fifofile
+	sleep(5);
 
+	fprintf(ret->fd[0], "print(\"Hello World\")\n");
+	fflush(ret->fd[0]);
+
+	// Wait until python exits:
+	// echo "exit()" > /tmp/fifofile
 	mywaitpid(ret);
+
+	printf("After waiting\n");
 
 	mypclose(ret);
 	return 0;
