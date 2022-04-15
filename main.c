@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	char *cmd[] = {argv[1], NULL};
+	char **cmd = &argv[1];
 
 	// Open the pipes: 1 in; 2 out; 4 err -> 7 = (1|2|4)
 	struct pipe_set *myset = mypopen(7, cmd);

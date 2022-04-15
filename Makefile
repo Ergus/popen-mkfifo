@@ -35,3 +35,4 @@ clean:
 test: main.x test.x test.py
 	./main.x test.x
 	./main.x test.py
+	./main.x /usr/bin/ls -l
