@@ -19,9 +19,14 @@
 #include <stdio.h>
 #include "mypopen.h"
 
-int main()
+int main(int argc, char **argv)
 {
-	char *cmd[] = {"./test.py", NULL};
+	if (argc < 2) {
+		printf("Usage: ./%s executable\n", argv[0]);
+		exit(1);
+	}
+
+	char *cmd[] = {argv[1], NULL};
 
 	// Open the pipes: 1 in; 2 out; 4 err -> 7 = (1|2|4)
 	struct pipe_set *myset = mypopen(7, cmd);

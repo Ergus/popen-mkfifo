@@ -32,5 +32,6 @@ lib%.so: %.o
 clean:
 	rm -rf *.o *.so *.x
 
-test: main.x test.x
-	./main.x
+test: main.x test.x test.py
+	./main.x test.x
+	./main.x test.py
