@@ -32,17 +32,18 @@ int main(int argc, char **argv)
 	struct pipe_set *ret = mymkfifo("/tmp/fifofile", cmd);
 
 	// Write to process, fflush is very needed.
-	fprintf(ret->fd[0], "print(\"Hello World\")\n");
+	fprintf(ret->fd[0], "print(\"Hello World (wait for 5 seconds)\")\n");
 	fflush(ret->fd[0]);
 
 	// At this point we can write to: /tmp/fifofile
 	// echo "3+3" > /tmp/fifofile
-	sleep(5);
+	sleep(4);
 
-	fprintf(ret->fd[0], "print(\"Hello World\")\n");
+	// Send exit() to exit now after 5 mins.
+	fprintf(ret->fd[0], "exit()\n");
 	fflush(ret->fd[0]);
 
-	// Wait until python exits:
+	// Wait until python exits, you ca also try:
 	// echo "exit()" > /tmp/fifofile
 	mywaitpid(ret);
 

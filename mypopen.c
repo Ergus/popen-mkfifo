@@ -126,30 +126,26 @@ struct pipe_set *mymkfifo(const char pipename[], char *const cmd[])
 	return ret;
 }
 
-void mywaitpid(struct pipe_set *pipes)
+int mywaitpid(struct pipe_set *pipes)
 {
 	int pstat;
 	pid_t pid;
 	do {
 		pid = waitpid(pipes->pid, &pstat, 0);
 	} while (pid == -1 && errno == EINTR);
+	return (pid == -1 ? -1 : pstat);
 }
 
 int mypclose(struct pipe_set *pipes)
 {
-	int pstat;
-	pid_t pid;
-
 	for (int i = 0; i < 3; ++i) {
 		if (pipes->fd[i] != NULL) {
 			fclose(pipes->fd[i]);
 		}
 	}
 
-	do {
-		pid = waitpid(pipes->pid, &pstat, 0);
-	} while (pid == -1 && errno == EINTR);
+	int ret = mywaitpid(pipes);
 
 	free(pipes);
-	return (pid == -1 ? -1 : pstat);
+	return ret;
 }
