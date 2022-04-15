@@ -32,7 +32,7 @@ lib%.so: %.o
 clean:
 	rm -rf *.o *.so *.x
 
-test: main_popen.x test.x test.py
+test: main_popen.x main_mkfifo.x test.x test.py
 	./main_popen.x test.x
 	./main_popen.x test.py
 	./main_popen.x /usr/bin/ls -l
