@@ -25,4 +25,14 @@ or
 make test
 ```
 
+The build command creates some executables. These are ones needed to
+test the functionalities.
 
+```
+./main_popen.x other command
+```
+
+for example, the tests execute:
+```
+./main_popen.x /usr/bin/ls -l
+```
