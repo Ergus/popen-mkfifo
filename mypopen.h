@@ -76,7 +76,9 @@ struct pipe_set *mymkfifo(const char pipename[], char *const cmd[]);
 
 /**
    Wait for the process described in pipes to finish.
+   \param the process descriptor as returned by mypopen. This function calls
+   \return Returns the process termination status.
  */
-void mywaitpid(struct pipe_set *pipes);
+int mywaitpid(struct pipe_set *pipes);
 
 #endif // MYPOPEN_H

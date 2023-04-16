@@ -31,10 +31,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-struct pipe_set {
-	pid_t pid;
-	FILE *fd[3];
-};
+#include "mypopen.h"
 
 struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 {
@@ -43,13 +40,18 @@ struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 		return NULL;
 	}
 
+	// Allocate the descriptor. We need volatile here.
 	struct pipe_set * volatile ret = malloc(sizeof(struct pipe_set));
 	if (ret == NULL) {
 		return NULL;
 	}
 
+	// This is a number descriptor arrays first number is for the descriptor,
+	// second one is an array for input/output.
 	int pdes[3][2];
 
+	// create pipes for the descriptors before the fork, so dup latter works as
+	// expected. Abort any of the pipe creations fail.
 	if (((modes & (1 << 0)) && pipe(pdes[0]) < 0)
 	    || ((modes & (1 << 1)) && pipe(pdes[1]) < 0)
 	    || ((modes & (1 << 2)) && pipe(pdes[2]) < 0)) {
@@ -57,9 +59,12 @@ struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 		return NULL;
 	}
 
+	// Create a new process copy of the actual one
 	pid_t pid  = fork();
 
-	if (pid == 0) { // Child
+	if (pid == 0) {// Child process
+
+		// Connect the descriptors based on mask `modes`
 		for (int i = 0; i < 3; ++i) {
 			if (modes & (1 << i)) {
 				close(pdes[i][1 - (bool)i]);
@@ -68,11 +73,14 @@ struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 			}
 		}
 
+		// Replace the current process now (after dup2) with a new one given cmd
 		execv(cmd[0], cmd);
 
+		// When execv returns the process has finished/failed.
 		exit(127);
 
-	} else if (pid == -1) {			/* Error. */
+	} else if (pid == -1) {			// Error
+		// On error close the er
 		for (size_t i = 0; i < 3; ++i) {
 			close(pdes[i][0]);
 			close(pdes[i][1]);
@@ -81,18 +89,21 @@ struct pipe_set *mypopen(const unsigned int modes, char *const cmd[])
 		return NULL;
 	}
 
-
-	// Parent; assume fdopen can't fail.
+	// Parent; assume fdopen can't fail. Initialize the return struct.
 	ret->pid = pid;
 	for (int i = 0; i < 3; ++i) {
-		ret->fd[i] = NULL;
+		ret->fd[i] = NULL; // NULL by default
 
 		if (modes & (1 << i)) {
+			// Then open a fd and close the number based descriptor to have only
+			// one. We want to use printf and we need FILE descriptors, not
+			// number based descriptors
 			ret->fd[i] = fdopen(pdes[i][1 - (bool)i], (i ? "r" : "w"));
 			close(pdes[i][(bool)i]);
 		}
 	}
 
+	// Return the pointer, remember to remove it.
 	return ret;
 }
 
@@ -138,14 +149,17 @@ int mywaitpid(struct pipe_set *pipes)
 
 int mypclose(struct pipe_set *pipes)
 {
+	// Close the pipes to process.
 	for (int i = 0; i < 3; ++i) {
 		if (pipes->fd[i] != NULL) {
 			fclose(pipes->fd[i]);
 		}
 	}
 
+	// Don't exit immediately. wait for the process to die.
 	int ret = mywaitpid(pipes);
 
+	// Release the process descriptor.
 	free(pipes);
 	return ret;
 }
